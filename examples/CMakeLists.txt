@@ -1,3 +1,4 @@
+# This cmake file will pick up any file called *-main.cpp and build a target for it.
 set(CMAKE_C_COMPILER_INIT g++)
 
 PROJECT(examples)
