@@ -15,6 +15,8 @@
 #include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
+
+#include "fisher-random-starting-position-generator.hpp"
 using namespace std;
 
 char spf_buffer[] = 
@@ -31,11 +33,10 @@ enum {
   P_MINUTE,
   P_SECOND,
   P_MILLISECOND,
-  P_INC
-};
-
-enum
-{
+  P_INC,
+  P_MAX_PLAYER_NUM_PARAMETERS,
+  P_FISHER_RANDOM = P_MAX_PLAYER_NUM_PARAMETERS * 2,
+  P_MAX_DISPLAY_PARAMETERS,
   BUTTON_P1 = 2,
   BUTTON_P2 = 3,
   BUTTON_START = 4,
@@ -44,8 +45,10 @@ enum
   BUTTON_MINUS = 7
 };
 
-int values[] = {0,0,0,0,0, 0,0,0,0,0, 0,0};
+int values[] = {0,0,0,0,0, 0,0,0,0,0};
+
 int mods[] = {24,60,60,1,200, 24,60,60,1,200};
+char fisherRandom[9] = {'-','-','-','-','-','-','-','-',0};
 int current = 0;
 bool started = false;
 int activePlayer = 0;
@@ -76,7 +79,10 @@ void perror_exit(char* error)
 void HandleIncrement(int index)
 {
   if (!started)
-    values[index] = (values[index] + 1) % mods[current];
+    if (index < 10)
+      values[index] = (values[index] + 1) % mods[current];
+    else
+      FisherRandomSetup::Create(fisherRandom);
 }
 
 void HandleDecrement(int index)
@@ -92,7 +98,7 @@ void ToggleStart()
 
 void IncrementClock(int playerId, int milliDiff)
 {
-  int offset = playerId*(P_INC +1);
+  int offset = playerId*(P_INC + P_MAX_PLAYER_NUM_PARAMETERS);
 
   values[P_MILLISECOND + offset] += milliDiff;
   while(values[P_MILLISECOND + offset] >= 10)
@@ -116,7 +122,7 @@ void IncrementClock(int playerId, int milliDiff)
 
 void DecrementClock(int playerId, int millidiff)
 {
-  int offset = playerId*(P_INC +1);
+  int offset = playerId*(P_MAX_PLAYER_NUM_PARAMETERS);
 
   values[P_MILLISECOND + offset] -= millidiff;
   while(values[P_MILLISECOND + offset] < 0)
@@ -159,7 +165,7 @@ void OnButtonPress(int value)
   case BUTTON_P1: printf("Playerone button\n"); TogglePlayer(0); break;
   case BUTTON_P2: printf("Playertwo button\n"); TogglePlayer(1); break;
   case BUTTON_START: printf("Start button\n"); ToggleStart(); break;
-  case BUTTON_NEXT: printf("Next button\n"); current = (current + 1) % 10; break;
+  case BUTTON_NEXT: printf("Next button\n"); current = (current + 1) % (P_MAX_DISPLAY_PARAMETERS); break;
   case BUTTON_PLUS: printf("Plus button\n"); HandleIncrement(current);  break;
   case BUTTON_MINUS: printf("Minus button\n"); HandleDecrement(current); break;
   } 
@@ -206,14 +212,14 @@ int main()
 	    values[P_MINUTE],
 	    values[P_SECOND],
 	    values[P_MILLISECOND],
-	    values[P_HOUR + P_INC + 1],
-	    values[P_MINUTE + P_INC + 1],
-	    values[P_SECOND + P_INC + 1],
-	    values[P_MILLISECOND + P_INC + 1],
+	    values[P_HOUR + P_MAX_PLAYER_NUM_PARAMETERS],
+	    values[P_MINUTE + P_MAX_PLAYER_NUM_PARAMETERS],
+	    values[P_SECOND + P_MAX_PLAYER_NUM_PARAMETERS],
+	    values[P_MILLISECOND + P_MAX_PLAYER_NUM_PARAMETERS],
 	    values[P_INC],
-	    values[P_INC + P_INC + 1],
-	    " <<<< TURN",
-	    "--------",
+	    values[P_INC + P_MAX_PLAYER_NUM_PARAMETERS],
+	    !activePlayer ? "<<<<<<<<<<<<<<<<<<<<<" : ">>>>>>>>>>>>>>>>>>>>>",
+	    fisherRandom,
 	    started ? "Y" : "N",
 	    "0");
 

@@ -7,6 +7,8 @@ cmake_minimum_required(VERSION 2.8)
 
 file(GLOB files "*-main.cpp")
 
+include_directories("${PROJECT_SOURCE_DIR}")
+
 foreach(filePath ${files})
   get_filename_component(file ${filePath} NAME)
   STRING(REGEX REPLACE 
@@ -17,3 +19,6 @@ foreach(filePath ${files})
   add_executable(${executable} ${filePath})
   MESSAGE("Creating build for ${executable}")
 endforeach()
+
+
+SET(GCC_COVERAGE_COMPILE_FLAGS "-g")
