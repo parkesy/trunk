@@ -8,12 +8,10 @@ using namespace std;
 int main()
 {
   srand(time(NULL));
-  char buffer[8];
+  char buffer[9] = {0,0,0,0,0,0,0,0,0};
   for (int j = 0; j < 10 ; ++j)
   {
     FisherRandomSetup::Create(buffer);
-    for (int  i = 0; i < 8; ++i)
-      cout << buffer[i];
-    cout << endl;
+    cout << buffer << endl;
   }
 }
